@@ -1,0 +1,531 @@
+SELECT price
+FROM products
+JOIN comments
+  ON products,product_id = comments.product_id
+WHERE sku = 'XXXXXXXXXXX'
+
+SELECT
+CREATE 
+  ALTER
+INSERT
+DELETE
+UPDATE
+---------------------------------
+
+CREATE DATABASE empresa;
+CREATE TABLE clients(name varchar(100),email varchar(60), phone_number  varchar(15));
+
+
+CREATE TABLE products (
+	name VARCHAR(20),
+
+	sku VARCHAR(20),
+
+	slug VARCHAR(20),
+	description TEXT,
+	price float
+	
+
+);
+
+ show create table products;
+---------------------+
+| products | CREATE TABLE `products` (
+  `name` varchar(20) DEFAULT NULL,
+  `sku` varchar(20) DEFAULT NULL,
+  `slug` varchar(20) DEFAULT NULL,
+  `description` text,
+  `price` float DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci |
+
+mysql> desc products;
++-------------+-------------+------+-----+---------+-------+
+| Field       | Type        | Null | Key | Default | Extra |
++-------------+-------------+------+-----+---------+-------+
+| name        | varchar(20) | YES  |     | NULL    |       |
+| sku         | varchar(20) | YES  |     | NULL    |       |
+| slug        | varchar(20) | YES  |     | NULL    |       |
+| description | text        | YES  |     | NULL    |       |
+| price       | float       | YES  |     | NULL    |       |
++-------------+-------------+------+-----+---------+-------+
+
+DROP TABLE  products;
+
+insert into clients(name) values('Pepe');
+
+ select * from clients;
++------+-------+--------------+
+| name | email | phone_number |
++------+-------+--------------+
+| Pepe | NULL  | NULL         |
++------+-------+--------------+
+
+--------------------------------------
+mysql> select current_timestamp;
++---------------------+
+| current_timestamp   |
++---------------------+
+| 2025-05-28 16:52:47 |
++---------------------+
+1 row in set (0.00 sec)
+
+CREATE TABLE clients(
+client_id integer unsigned primary key auto_increment,
+name varchar(100),
+email varchar(60) unique not null, 
+phone_number varchar(15) not null,
+created_at timestamp not null default current_timestamp,
+modified_at timestamp not null default current_timestamp on update current_timestamp
+);
+
+
+---------------------------------------------
+Normalización y relaciones
+
+1:1
+1:n
+n:m
+
+DVML
+
+-----------
+CREATE TABLE if not exists clients(
+client_id integer unsigned primary key auto_increment,
+name varchar(100),
+email varchar(100) unique not null, 
+phone_number varchar(15) not null,
+created_at timestamp not null default current_timestamp,
+modified_at timestamp not null default current_timestamp on update current_timestamp
+);
+
+
+CREATE TABLE if not exists products(
+product_id integer unsigned primary key auto_increment,
+name varchar(100) not null,
+slug varchar(200) not null unique,
+description text,
+created_at timestamp not null default current_timestamp,
+modified_at timestamp not null default current_timestamp on update current_timestamp
+);
+
+CREATE TABLE IF NOT EXISTS bills (
+  bill_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  client_id INT UNSIGNED NOT NULL,
+  total FLOAT,
+  status ENUM('open', 'paid', 'lost') NOT NULL DEFAULT 'open',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modified_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (client_id) REFERENCES clients(client_id)
+
+on delete cascade
+on update cascade
+);  cascade depende de la lógica del programa 
+
+insert into clients(client_id, name, email, phone_number) values(10, 'eduardo', 'eduardo@gmail.com', 1111122);
+
+insert into products(name, slug) values('mayonesa de paquete','slug-mayonesa'); 
+
+
+
+insert into bills(client_id, total) values(10, 10.50);
+
+insert into bill_products(product_id, bill_id) values(1,4);
+
+
+
+
+
+update clients set client_id = 11 where client_id =10;
+
+
+
+
+
+
+
+CREATE TABLE IF NOT EXISTS bill_products (
+  bill_product_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  bill_id INT UNSIGNED NOT NULL,
+  product_id INT UNSIGNED NOT NULL,
+  quantity INT NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modified_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (bill_id) REFERENCES bills(bill_id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+  FOREIGN KEY (product_id) REFERENCES products(product_id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+--------------------------------------
+
+CREATE TABLE if not exists clients(
+client_id integer unsigned primary key auto_increment,
+name varchar(100),
+email varchar(100) unique not null, 
+phone_number varchar(15) not null,
+created_at timestamp not null default current_timestamp,
+modified_at timestamp not null default current_timestamp on update current_timestamp
+);
+
+
+CREATE TABLE if not exists products(
+product_id integer unsigned primary key auto_increment,
+name varchar(100) not null,
+slug varchar(200) not null unique,
+description text,
+created_at timestamp not null default current_timestamp,
+modified_at timestamp not null default current_timestamp on update current_timestamp
+);
+
+CREATE TABLE IF NOT EXISTS bills (
+  bill_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  client_id INT UNSIGNED NOT NULL,
+  total FLOAT,
+  status ENUM('open', 'paid', 'lost') NOT NULL DEFAULT 'open',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modified_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS bill_products (
+  bill_product_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  bill_id INT UNSIGNED NOT NULL,
+  product_id INT UNSIGNED NOT NULL,
+  quantity INT NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modified_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+------------------------------------
+
+tipos de tablas en BD relacionales
+Las tablas tipo catálogo (dimensión) y las tablas tipo operación (transacción) son fundamentales en el diseño de bases de datos. A continuación, se presentan sus ventajas y desventajas:
+
+Tablas Tipo Catálogo (Dimensión)
+Pros:
+
+Estructura Fija: Almacenan datos estáticos como productos, lo que facilita su mantenimiento.
+Consulta Rápida: Permiten acceder rápidamente a información de referencia.
+Facilitan la Normalización: Reducen la redundancia de datos, mejorando la integridad.
+Cons:
+
+Actualizaciones Limitadas: Cambios frecuentes pueden requerir revisiones en el diseño.
+Poca Flexibilidad: No son ideales para almacenar datos que cambian constantemente.
+Tablas Tipo Operación (Transacción)
+Pros:
+
+Registro Detallado: Capturan cada interacción en el negocio, útil para análisis y reporting.
+Alta Frecuencia de Cambios: Pueden manejar operaciones diarias, maximizando la utilidad de los datos.
+Facilitan Auditorías: Permiten el seguimiento completo de transacciones, esencial para la contabilidad.
+Cons:
+
+Mayor Complejidad: Pueden ser difíciles de gestionar si no están bien diseñadas.
+Riesgo de Duplicidad: Pueden generar redundancias si no se manejan adecuadamente, afectando la normalización.
+Ambas tablas son vitales para un sistema de base de datos eficiente, cada una con un propósito específico en la organización y análisis de datos.
+
+----------------------
+
+modificación de tablas
+create table test(
+test_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  name varchar(100) not null,
+  qty INT,	
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+ );
+
+
+alter table test add column price float;
+
+alter table test drop column price ;
+
+alter table test add column price float after qty;
+
+alter table test modify column price decimal(10,3) not null;
+
+alter table test rename column price to prices;
+
+alter table test rename to tests;
+
+--------------------------------
+
+INSERT INTO products(name,slug) values('lapiz blanco', 'lapiz-blanco'),
+('lapiz negro','lapiz-negro')
+;
+
+INSERT INTO products(name,slug) values('lapiz blanco', 'lapiz-blanco'),
+('lapiz negro','lapiz-negro') 
+ON DUPLICATE KEY UPDATE description =concat('hola: ', values(slug))
+;
+
+alter table products add column price float after slug;
+
+update products set price = rand()*100;
+
+INSERT INTO products(name,slug) values('lapiz blanco', 'lapiz-blanco')
+ON DUPLICATE KEY UPDATE description = price;
+
+-----------------------------------------------
+
+
+
+CREATE TABLE if not exists products(
+product_id integer unsigned primary key auto_increment,
+sku varchar(20) not null unique,
+name varchar(50) not null,
+slug varchar(50) not null unique,
+description text,
+created_at timestamp not null default current_timestamp,
+modified_at timestamp not null default current_timestamp on update current_timestamp
+);
+
+alter table products add column price decimal(10,2) after slug;
+
+
+select count(*) from products;
+
+--------------------------------------------
+
+SELECT name 
+FROM clients
+WHERE name like 'Mr.%';
+% EL PORCENTAJE ES QUE SEA LO QUE SEA DSPS
+
+SELECT name 
+FROM clients
+WHERE name like 'Mr.%III';
+
+
+SELECT name 
+FROM clients
+WHERE name like 'Mr.%III'
+OR
+name like 'Mr.%IV'
+
+;
+	
+select name, price
+from products
+where price *10 between 5000 and 7000;
+
+
+
+select * from bill_products
+where date_added between '2024-06-04' and '2024-06-05';
+
+
+select * from bill_products
+where 
+date_added between '2024-06-04' and '2024-06-05'
+
+AND 
+
+product_id in (779,500,1986)
+;
+
+update table [table]
+
+set [columna = nuevo_valor,...]
+
+WHERE [condicion,...]
+
+update clients
+set phone_number = '3'
+where client_id = 12
+limit 1
+
+update clients set phone_number = null 
+where 
+name like 'laura%' 
+or name like 'claire%';
+
+update clients set phone_number = null 
+where 
+name like 'laura%' 
+or name like 'claire%'
+;
+
+
+update clients 
+set phone_number = null 
+where 
+(name like 'laura%' 
+or name like 'claire%')
+and phone_number is not null 
+limit 10;
+
+
+update products set stock = round(100*rand());
+
+
+update products set stock = stock -3 where product_id = 8
+
+
+alter table clients add column active tinyint not null default 1 after phone_number;
+
+delete from table, products where false;
+
+
+SELECT product_id, name, price, stock
+FROM products
+where price<= 100
+and stock>90
+
+ORDER BY stock desc
+;
+
+
+
+SELECT product_id, name, price, stock, price * stock AS total
+FROM products
+ORDER BY total DESC
+LIMIT 10;
+
+SELECT product_id, name, price, stock, price * stock AS total
+FROM products
+ORDER BY total DESC
+LIMIT 100 10;
+----------------------------
+
+COUNT: cuenta registros o filas.
+SUM: suma valores numéricos de una columna específica.
+AVG: calcula el promedio de valores numéricos.
+
+Total de inventario:
+SELECT SUM(STOCK) FROM PRODUCTS;
+Promedio de precios:
+SELECT AVG(PRICE) FROM PRODUCTS;
+Dinero invertido en stock (calcular multiplicando precio por existencias):
+SELECT SUM(PRICE * STOCK) FROM PRODUCTS;
+
+SELECT EMAIL,
+  CASE
+    WHEN EMAIL LIKE '%@gmail.com' THEN 'Gmail'
+    WHEN EMAIL LIKE '%@hotmail.com' THEN 'Hotmail'
+    WHEN EMAIL LIKE '%@yahoo.com' THEN 'Yahoo'
+    ELSE 'Otro proveedor'
+  END AS PROVEEDOR
+FROM CLIENTS;
+
+SELECT
+  CASE
+    WHEN EMAIL LIKE '%@gmail.com' THEN 'Gmail'
+    WHEN EMAIL LIKE '%@hotmail.com' THEN 'Hotmail'
+    WHEN EMAIL LIKE '%@yahoo.com' THEN 'Yahoo'
+    ELSE 'Otro proveedor'
+  END AS PROVEEDOR,
+  COUNT(*) AS TOTAL_CLIENTES
+FROM CLIENTS
+GROUP BY PROVEEDOR;
+
+
+SELECT
+  CASE
+    WHEN EMAIL LIKE '%@gmail.com' THEN 'Gmail'
+    WHEN EMAIL LIKE '%@hotmail.com' THEN 'Hotmail'
+    WHEN EMAIL LIKE '%@yahoo.com' THEN 'Yahoo'
+    WHEN EMAIL LIKE '%@kozey.com' THEN 'kozey'
+
+    ELSE 'Otro proveedor'
+  END AS PROVEEDOR,
+  COUNT(*) AS TOTAL_CLIENTES
+FROM CLIENTS
+WHERE name like'a%'
+
+GROUP BY PROVEEDOR
+
+having TOTAL_CLIENTES <100 
+ORDER BY TOTAL_CLIENTES asc
+;
+
+----------------------------
+create table investment(
+ investment_id integer unsigned primary key auto_increment,
+product_id integer unsigned not null,
+investment integer not null default 0
+);
+
+insert into investment(product_id, investment)
+select product_id, stock * price from products
+
+
+select * from investment order by investment desc limit 10;
+
+
+select * from products where product_id = 2264;
+
+
+--------------------------
+
+JOIN
+
+SELECT columnas
+FROM tabla1
+LEFT JOIN tabla2 ON tabla1.id = tabla2.id
+WHERE condiciones;
+
+Los joins son operaciones en bases de datos que permiten combinar registros de dos o más tablas basándose en una relación común. Se utilizan para:
+
+Conectar datos: Facilitan la integración de información dispersa en diferentes tablas, evitando duplicación y mejorando la normalización.
+Análisis de datos: Permiten consultas más complejas y detalladas, esenciales para el análisis y la toma de decisiones.
+Importancia: Son cruciales para obtener una visión completa y coherente de los datos, permitiendo responder preguntas más complejas.
+
+Antipatrones: Evitar joins innecesarios o complejos puede prevenir problemas de rendimiento. Es fundamental diseñar adecuadamente la estructura de las tablas y las relaciones para optimizar las consultas.
+
+
+select *
+from investment
+left join products
+   on products.product_id = investment.product_id
+where investment > 10000
+and investment_id %10 = 0
+
+
+¿Cómo obtener una lista de facturas con datos esenciales?
+
+SELECT
+  bill.bill_id,
+  bill.status,
+  clients.name
+FROM bills AS bill
+LEFT JOIN clients AS clients ON bill.client_id = clients.client_id;
+
+¿Cómo contar productos vendidos por factura?
+
+SELECT
+  bill.bill_id,
+  bill.status,
+  clients.name,
+  COUNT(bp.bill_product_id) AS number_of_products
+FROM bills AS bill
+LEFT JOIN clients AS clients ON bill.client_id = clients.client_id
+LEFT JOIN bill_products AS bp ON bp.bill_id = bill.bill_id
+GROUP BY bill.bill_id;
+
+¿Cómo calcular el monto final de una factura incluyendo descuentos?
+
+SELECT
+  bill.bill_id,
+  bill.status,
+  clients.name,
+  COUNT(bp.bill_product_id) AS number_of_products,
+  ROUND(SUM(bp.quantity * product.price * (1 - bp.discount / 100)), 2) AS total
+FROM bills AS bill
+LEFT JOIN clients AS clients ON bill.client_id= clients.client_id
+LEFT JOIN bill_products AS bp ON bp.bill_id= bill.bill_id
+LEFT JOIN products AS product ON bp.product_id = product.product_id
+GROUP BY bill.bill_id;
+
+
+
+¿Por qué es útil concatenar resultados en consultas SQL?
+
+SELECT
+  CONCAT(clients.name, ' tiene una cuenta ', bill.status, ' con ', COUNT(bp.bill_product_id), ' productos y suma ', ROUND(SUM(bp.quantity * product.price * (1 - bp.discount / 100)), 2)) AS resultado
+FROM bills AS bill
+LEFT JOIN clients AS clients ON bill.client_id = clients.client_id
+LEFT JOIN bill_products AS bp ON bp.bill_id= bill.bill_id
+LEFT JOIN products AS product ON bp.product_id= product.product_id
+GROUP BY bill.bill_id;
+
